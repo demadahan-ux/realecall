@@ -4,7 +4,9 @@ Real people. Clear processes. An extension of your team.
 
 Source repository: https://github.com/demadahan-ux/realecall
 
-This repository contains the website source. Hosting and account-specific integration settings are configured separately.
+Live website: https://demadahan-ux.github.io/realecall/
+
+This repository contains the website source. The public frontend is hosted on GitHub Pages. The inquiry API and owner desk run on the configured Sites backend; account-specific integration settings are configured separately.
 
 A responsive RealeCall website with two presentations of the original blue brand:
 
@@ -24,7 +26,7 @@ Requests for four or more agents are flagged P1. Other inquiries use a transpare
 
 ## Current scope
 
-The website source is maintained in this repository and packaged for Sites hosting. Publishing a GitHub commit does not automatically deploy the website; Sites source packaging and publication remain a separate step. The supplied GitHub repository's original README description is retained above. This public source export excludes the private hosting manifest, connected-account identifiers, generated account-specific Apps Script, runtime credentials, and lead records.
+The website source is maintained in this repository. GitHub Pages serves the compiled frontend from the `realecall/` directory in `demadahan-ux/demadahan-ux.github.io`; the portfolio at the repository root is preserved. Source commits here do not automatically deploy either host. Sites backend packaging and publication remain a separate step. This public source export excludes the private hosting manifest, connected-account identifiers, generated account-specific Apps Script, runtime credentials, and lead records.
 
 The lead form saves to the website database. The Google Sheets integration supports Leads, Follow-ups, Overdue, No Show, Closed Slots, and Follow-up Setup tabs. Apps Script templates and the no-show email sequence are prepared in `automation/`; they require deployment and account authorization before they run. Calendly uses the event URL supplied in runtime configuration. No SMS provider is connected.
 
@@ -32,7 +34,7 @@ The follow-up sequence requires an actual host-marked no-show, offers live Calen
 
 Runtime configuration uses Sites environment variables. `ADMIN_EMAILS` is the authorised account list. `RATE_LIMIT_SALT` is a server secret. Integration settings and activation steps are documented in `automation/README.md`; never include credential values in source control. Runtime environment files, database contents, and lead exports are excluded from this repository.
 
-Hosting access is managed separately from this public source repository. Metadata intentionally prevents indexing until the owner chooses to enable it.
+The client website is public. The backend's inquiry and scheduling endpoints accept cross-origin requests only from the configured HTTPS `PUBLIC_SITE_ORIGIN`. The owner API remains authenticated and is not exposed through cross-origin access.
 
 ## Verification
 
@@ -62,3 +64,9 @@ Provider references: https://resend.com/docs/api-reference/emails/send-email and
 4. Keep API tokens and signing secrets in runtime secrets or Google Script Properties. This repository contains no live account connection or customer records.
 
 Changes to the feedback UI are in `app/client-feedback.tsx` and `app/client-feedback.css`. Review content provenance is documented in `assets/feedback-sources.md`.
+
+## GitHub Pages build
+
+Run `REALECALL_API_ORIGIN=https://YOUR-CONFIGURED-BACKEND node scripts/build-pages.mjs` after installing dependencies. The API origin must be an HTTPS origin without a trailing slash. This creates `pages-dist/`, with the `/realecall/` base path and both palette routes. Publish its contents under `realecall/` in the existing Pages hosting repository. Keep the portfolio root and its `.nojekyll` intact.
+
+Configure the backend's `PUBLIC_SITE_ORIGIN` as `https://demadahan-ux.github.io`. Only the public scheduling GET and lead POST support this origin; preflight requests are validated, and credentials are omitted. The website retains server validation, rate limiting, duplicate protection and database persistence. Google Sheets and automated follow-up emails still require the account authorization and activation described above.

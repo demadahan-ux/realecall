@@ -1,8 +1,14 @@
 import {emailStatus,sendConfirmation} from '../../../lib/confirmation-email';
 import {leadSchema,qualifyLead} from '../../../lib/qualification';
-import {config,reply,sameOrigin,rateLimit,digest,syncLead,googleEmailConfigured,calendlyUrl} from '../../../lib/runtime';
+import {config,reply,rateLimit,digest,syncLead,googleEmailConfigured,calendlyUrl} from '../../../lib/runtime';
+import {publicOriginAllowed,withPublicCors,publicPreflight} from '../../../lib/public-cors';
 export async function POST(r:Request){
- if(!sameOrigin(r))return reply({error:'Please submit from the RealeCall website.'},403);
+ const origin=config().PUBLIC_SITE_ORIGIN;
+ if(!publicOriginAllowed(r,origin))return reply({error:'Please submit from the RealeCall website.'},403);
+ return withPublicCors(r,await saveLead(r),origin);
+}
+export function OPTIONS(r:Request){return publicPreflight(r,'POST',config().PUBLIC_SITE_ORIGIN);}
+async function saveLead(r:Request){
  if(!r.headers.get('content-type')?.includes('application/json'))return reply({error:'JSON required.'},415);
  try{
   const raw=await r.text();if(raw.length>15000)return reply({error:'Your inquiry is too long.'},413);

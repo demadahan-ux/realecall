@@ -1,15 +1,17 @@
 'use client';
 
 import {useRef,useState,type KeyboardEvent} from 'react';
-import {ArrowLeft,ArrowRight,Clock3,MessageSquareQuote,Star} from 'lucide-react';
+import {ArrowLeft,ArrowRight,Clock3,Inbox,MessageSquareQuote,PhoneIncoming,Star} from 'lucide-react';
 import './client-feedback.css';
 
 // Only ratings visible in the supplied Upwork records are shown as stars.
-// The One-Click team commendation did not include a numeric rating.
+// The team commendation did not include a numeric rating.
 const feedback=[
- {id:'team-commendation',kind:'commendation',title:'You guys are the best!',label:'A note from a client',source:'One-Click Virtual Support',detail:'Client commendation',context:'Shared after the team helped bring a customer support backlog under control.'},
+ {id:'team-commendation',kind:'commendation',title:'You guys are the best!',label:'A note from a client',source:'Client commendation',detail:'Customer support team',context:'Shared after the team helped bring a customer support backlog under control.'},
  {id:'product-launch',kind:'rating',title:'Customer Service for New Product Launch',label:'Customer service',source:'Upwork',detail:'Completed contract',rating:5,hours:'5,355',period:'August 2020 – October 2025'},
- {id:'ecommerce-support',kind:'rating',title:'Customer Support Agent for eCommerce company',label:'Ecommerce support',source:'Upwork',detail:'Completed contract',rating:5,hours:'2',period:'August 2026'}
+ {id:'product-launch-5243',kind:'rating',title:'Customer Service for New Product Launch',label:'Customer service',source:'Upwork',detail:'Completed contract',rating:5,hours:'5,243',period:'August 2020 – October 2025'},
+ {id:'product-launch-3309',kind:'rating',title:'Customer Service for New Product Launch',label:'Customer service',source:'Upwork',detail:'Completed contract',rating:5,hours:'3,309',period:'August 2020 – October 2025'},
+ {id:'product-launch-2088',kind:'rating',title:'Customer Service for New Product Launch',label:'Customer service',source:'Upwork',detail:'Completed contract',rating:5,hours:'2,088',period:'February 2021 – October 2025'}
 ] as const;
 
 function Rating({value}:{value:number}){
@@ -50,7 +52,7 @@ export default function ClientFeedback(){
  }
 
  return <section id="client-feedback" className="section feedback-section"><div className="container">
-  <div className="section-heading"><div><p className="eyebrow">EXPERIENCE BEHIND THE SERVICE</p><h2>Good support<br/><span>leaves an impression.</span></h2></div><p>Selected client ratings and team commendations, alongside past results from One-Click Virtual Support.</p></div>
+  <div className="section-heading"><div><p className="eyebrow">EXPERIENCE BEHIND THE SERVICE</p><h2>Good support<br/><span>leaves an impression.</span></h2></div><p>Client ratings, team commendations, and results from our customer support work.</p></div>
 
   <div className="feedback-carousel" role="region" aria-roledescription="carousel" aria-label="Client feedback">
    <div className="feedback-carousel-top"><p>IN OUR CLIENTS’ WORDS <span>&amp; RATINGS</span></p><span className="feedback-swipe-hint">Swipe to explore <ArrowRight size={14} aria-hidden="true"/></span></div>
@@ -72,11 +74,11 @@ export default function ClientFeedback(){
    </div>
   </div>
 
-  <div className="feedback-results-heading"><p className="eyebrow">PAST TEAM RESULTS</p><span>One-Click Virtual Support</span></div>
+  <div className="feedback-results-heading"><div><p className="eyebrow">RESULTS FROM THE WORK</p><h3>Less backlog.<br/><span>More customers heard.</span></h3></div><p>Measurable improvements in the support that keeps a business moving.</p></div>
   <div className="feedback-results">
-   <article><div className="feedback-result-number"><strong>~1,900</strong><ArrowRight size={25} aria-hidden="true"/><strong>25</strong></div><h3>Unsolved tickets reduced</h3><p>A customer support backlog brought down to a much more manageable queue.</p></article>
-   <article><div className="feedback-result-number"><strong>85%</strong><ArrowRight size={25} aria-hidden="true"/><strong>91%</strong></div><h3>More calls answered</h3><p>A 6 percentage point increase in call answer rate, from January to May 2024.</p></article>
+   <article className="feedback-impact-backlog"><div className="feedback-impact-label"><Inbox size={20} aria-hidden="true"/><span>TICKET MANAGEMENT</span></div><strong className="feedback-impact-metric">~99<span>%</span></strong><h3>Fewer unresolved tickets.</h3><p>A heavy customer support backlog brought under control, leaving a clearer queue for the team.</p><div className="feedback-impact-comparison"><div><span>Before</span><strong>~1,900</strong><small>unresolved tickets</small></div><ArrowRight size={23} aria-hidden="true"/><div><span>After</span><strong>25</strong><small>unresolved tickets</small></div></div></article>
+   <article className="feedback-impact-calls"><div className="feedback-impact-label"><PhoneIncoming size={20} aria-hidden="true"/><span>CALL SUPPORT</span></div><strong className="feedback-impact-metric">91<span>%</span></strong><h3>Of incoming calls answered.</h3><p>More customers reaching the support team, with a 6 percentage point improvement in answer rate.</p><div className="feedback-impact-comparison"><div><span>January 2024</span><strong>85%</strong><small>call answer rate</small></div><ArrowRight size={23} aria-hidden="true"/><div><span>May 2024</span><strong>91%</strong><small>call answer rate</small></div></div></article>
   </div>
-  <p className="feedback-context">Client ratings are from shared Upwork work history. Team commendations and operational results reflect past One-Click Virtual Support engagements.</p>
+  <p className="feedback-context">Selected ratings from completed Upwork engagements, alongside client feedback and past team results.</p>
  </div></section>;
 }

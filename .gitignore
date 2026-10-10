@@ -60,3 +60,6 @@ next-env.d.ts
 /automation/config.json
 /automation/Code.gs
 /.openai/hosting.json
+
+# Generated GitHub Pages frontend
+/pages-dist/

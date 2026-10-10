@@ -1,4 +1,5 @@
 import {Clapperboard,Landmark,MessagesSquare,Palette,TicketCheck} from 'lucide-react';
+import {sitePath} from '../lib/public-site';
 
 const brands:Record<string,string[]>={
  Zendesk:['zendesk'],Intercom:['intercom'],HubSpot:['hubspot'],Salesforce:['salesforce'],Shopify:['shopify'],
@@ -9,6 +10,6 @@ const symbols:Record<string,typeof Palette>={Canva:Palette,CapCut:Clapperboard,'
 export default function ToolIcon({name}:{name:string}){
  const marks=brands[name];const Symbol=symbols[name];
  return <span className={`team-tool-icon${marks&&marks.length>1?' team-tool-icon-pair':''}${name==='Canva'?' design-tool-icon':''}`} aria-hidden="true">
-  {marks?marks.map(mark=><img key={mark} src={`/tool-icons/${mark}.svg`} alt="" width="20" height="20" loading="lazy"/>):Symbol?<Symbol size={20} strokeWidth={1.8}/>:null}
+  {marks?marks.map(mark=><img key={mark} src={sitePath(`/tool-icons/${mark}.svg`)} alt="" width="20" height="20" loading="lazy"/>):Symbol?<Symbol size={20} strokeWidth={1.8}/>:null}
  </span>;
 }

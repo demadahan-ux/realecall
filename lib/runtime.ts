@@ -1,5 +1,5 @@
 import {env} from 'cloudflare:workers';
-export const config=()=>env as unknown as {DB:D1Database;APPS_SCRIPT_URL?:string;WEBHOOK_SECRET?:string;RATE_LIMIT_SALT?:string;SHEETS_URL?:string;ADMIN_EMAILS?:string;RESEND_API_KEY?:string;CONFIRMATION_EMAIL_FROM?:string;CONFIRMATION_EMAIL_REPLY_TO?:string;CONFIRMATION_EMAIL_ENABLED?:string;GOOGLE_EMAIL_ENABLED?:string;CALENDLY_URL?:string;CALENDLY_SHEET_SYNC_ENABLED?:string;FOLLOWUP_EMAIL_ENABLED?:string};
+export const config=()=>env as unknown as {DB:D1Database;APPS_SCRIPT_URL?:string;WEBHOOK_SECRET?:string;RATE_LIMIT_SALT?:string;SHEETS_URL?:string;ADMIN_EMAILS?:string;RESEND_API_KEY?:string;CONFIRMATION_EMAIL_FROM?:string;CONFIRMATION_EMAIL_REPLY_TO?:string;CONFIRMATION_EMAIL_ENABLED?:string;GOOGLE_EMAIL_ENABLED?:string;CALENDLY_URL?:string;CALENDLY_SHEET_SYNC_ENABLED?:string;FOLLOWUP_EMAIL_ENABLED?:string;PUBLIC_SITE_ORIGIN?:string};
 export function calendlyUrl(){const url=config().CALENDLY_URL;return url&&/^https:\/\/calendly\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+$/.test(url)?url:null;}
 export function googleEmailConfigured(){const e=config();return e.GOOGLE_EMAIL_ENABLED==='true'&&!!e.APPS_SCRIPT_URL&&!!e.WEBHOOK_SECRET;}
 export const reply=(data:unknown,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});

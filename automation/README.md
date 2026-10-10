@@ -1,6 +1,6 @@
 # RealeCall Google activation
 
-Copy `config.example.json` to the ignored private `config.json` and configure the tracker, Calendly identifiers, and website URL there. Both page designs save inquiries in D1 first. Google syncing and confirmation emails remain disabled until the Google web app is authorised, deployed and verified.
+Copy `config.example.json` to the ignored private `config.json` and configure the tracker, Calendly identifiers, and website URL there. Use `https://demadahan-ux.github.io/realecall/` as the client website URL. Both page designs save inquiries in D1 first. Google syncing and confirmation emails remain disabled until the Google web app is authorised, deployed and verified.
 
 1. Sign in to Google Apps Script with the account authorised to send RealeCall acknowledgements and edit the lead tracker.
 2. Run `node scripts/generate-google.mjs` locally, then create a standalone script and paste the generated `Code.gs`. This ignored local file contains private integration identifiers and must not be committed. Regenerate after template or configuration edits.
