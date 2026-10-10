@@ -1,0 +1,9 @@
+{
+  "spreadsheetId": "YOUR_SPREADSHEET_ID",
+  "spreadsheetUrl": "https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID/edit",
+  "calendlyUrl": "https://calendly.com/YOUR_ACCOUNT/YOUR_EVENT",
+  "calendlyUser": "https://api.calendly.com/users/YOUR_USER_ID",
+  "calendlyOrganization": "https://api.calendly.com/organizations/YOUR_ORGANIZATION_ID",
+  "calendlyEventType": "https://api.calendly.com/event_types/YOUR_EVENT_TYPE_ID",
+  "websiteUrl": "https://your-website.example"
+}

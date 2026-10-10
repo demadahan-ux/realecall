@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+import ts from 'typescript';
+import {HEADERS,BOOKING_HEADERS,LEAD_OPTIONS,sheetFormulas} from '../automation/sheet-model.mjs';
+import * as followup from '../automation/followup-model.mjs';
+const configPath=new URL('../automation/config.json',import.meta.url);
+if(!fs.existsSync(configPath))throw new Error('Copy automation/config.example.json to automation/config.json and fill in your private integration settings before generating Apps Script.');
+const config=JSON.parse(fs.readFileSync(configPath,'utf8'));
+let template=fs.readFileSync(new URL('../lib/confirmation-template.ts',import.meta.url),'utf8').replace(/^import type .*;\n/,'').replaceAll('export ','').replaceAll(':LeadInput','');
+template=ts.transpileModule(template,{compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.ESNext}}).outputText.replace(/export\s*\{\s*\};?/g,'');
+const constants={CALENDLY_USER:config.calendlyUser,CALENDLY_ORGANIZATION:config.calendlyOrganization,CALENDLY_EVENT_TYPE:config.calendlyEventType,DEFAULT_SPREADSHEET_ID:config.spreadsheetId,HEADERS:[...HEADERS,'Confirmation email','Email accepted (UTC)','Email issue','Contact consent',...BOOKING_HEADERS],LEAD_OPTIONS:{...LEAD_OPTIONS,S:['discovery','chat','proposal','question']},SERVICES:['Inbound & outbound calls','Email & chat support','Appointment setting','Back-office assistance']};
+Object.assign(constants,{FOLLOWUP_HEADERS:followup.FOLLOWUP_HEADERS,CALENDLY_URL:config.calendlyUrl,WEBSITE_URL:config.websiteUrl});
+const followupFunctions=Object.values(followup).filter(v=>typeof v==='function').map(f=>f.toString()).join('\n');
+const result=Object.entries(constants).map(([k,v])=>'var '+k+'='+JSON.stringify(v)+';').join('\n')+'\n'+sheetFormulas.toString()+'\n'+template+'\n'+followupFunctions+'\n'+fs.readFileSync(new URL('../automation/Google.template.gs',import.meta.url),'utf8')+'\n'+fs.readFileSync(new URL('../automation/Calendly.template.gs',import.meta.url),'utf8')+'\n'+fs.readFileSync(new URL('../automation/Followups.template.gs',import.meta.url),'utf8');
+fs.writeFileSync(new URL('../automation/Code.gs',import.meta.url),result);
+console.log('Generated Apps Script without credentials.');
