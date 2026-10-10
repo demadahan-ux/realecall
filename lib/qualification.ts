@@ -9,7 +9,7 @@ export const leadSchema=z.object({
  budgetStatus:z.enum(['Approved budget','Planning a budget','Need guidance']),budget:z.string().trim().max(120).default(''),role:z.enum(['Owner / decision-maker','Team manager','Researching for my team']),
  intent:z.enum(['discovery','chat','proposal','question']),bookingMode:z.enum(['team','calendly']).default('team'),mode:z.enum(['Email','Phone','WhatsApp','Video call']),phone:z.string().trim().max(40).default(''),timezone:z.string().trim().max(80),
  date:z.string().max(10).default(''),timeWindow:z.enum(['Morning (9am–12pm)','Afternoon (12pm–5pm)','Evening (5pm–8pm)','Flexible','']).default(''),
- message:z.string().trim().min(10).max(3000),consent:z.literal(true),websiteCheck:z.string().max(0).default(''),variant:z.enum(['royal','ice'])
+ message:z.string().trim().min(10).max(3000),consent:z.literal(true),consentVersion:z.enum(['2026-10-10']).optional(),websiteCheck:z.string().max(0).default(''),variant:z.enum(['royal','ice'])
 }).superRefine((d,ctx)=>{
  if(d.intent==='chat'&&!['Email','WhatsApp'].includes(d.mode))ctx.addIssue({code:'custom',path:['mode'],message:'Choose email or WhatsApp for a written conversation.'});
  if(['Phone','WhatsApp'].includes(d.mode)&&!/^\+?[\d\s().-]{7,30}$/.test(d.phone))ctx.addIssue({code:'custom',path:['phone'],message:'Enter a phone number with country code.'});

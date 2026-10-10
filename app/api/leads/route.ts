@@ -19,7 +19,7 @@ async function saveLead(r:Request){
   if(previous){if(previous.payload_hash!==hash)return reply({error:'This request changed. Please refresh and submit again.'},409);return reply({ok:true,reference:'RC-'+d.requestId.slice(0,8).toUpperCase(),duplicate:true,emailStatus:await emailStatus(d.requestId)});}
   if(!await rateLimit(r))return reply({error:'Too many requests. Please try again later.'},429);
   const q=qualifyLead(d);const createdAt=new Date().toISOString();
-  await db.prepare('INSERT INTO leads (id,created_at,payload,payload_hash,score,premium,priority,reasons,sheet_status,status) VALUES (?,?,?,?,?,?,?,?,?,?)').bind(d.requestId,createdAt,JSON.stringify(d),hash,q.score,q.premium?1:0,q.priority,JSON.stringify(q.reasons),'pending','New').run();
+  await db.prepare('INSERT INTO leads (id,created_at,payload,payload_hash,score,premium,priority,reasons,sheet_status,status) VALUES (?,?,?,?,?,?,?,?,?,?)').bind(d.requestId,createdAt,JSON.stringify({...d,consentRecordedAt:createdAt}),hash,q.score,q.premium?1:0,q.priority,JSON.stringify(q.reasons),'pending','New').run();
   let mailStatus;
   if(googleEmailConfigured()){await syncLead(d.requestId);mailStatus=await emailStatus(d.requestId);}
   else {[mailStatus]=await Promise.all([sendConfirmation(d.requestId),syncLead(d.requestId)]);}

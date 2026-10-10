@@ -54,3 +54,14 @@ On the last step, cancel only the original **past one-to-one** appointment, veri
 Accepted means the email provider accepted the send, not confirmed delivery. A durable sending marker prevents duplicate delivery when a result is uncertain. Quota/provider failures do not advance the sequence. `Needs review` cases must be checked in Sent mail before any manual retry. SMS is not configured; the implemented channel is email.
 
 Run `node scripts/check-followups.mjs` for isolated tests of the full cadence, timezone/DST boundaries, stop conditions, provider failures, duplicate prevention and calendar closure. These tests use fixtures; they send no real email and create/cancel no real appointments.
+
+
+## Booking thank-you email (prepared; Google activation required)
+
+`setupBookingEmails` enables a separate RealeCall thank-you only after Google email and the verified Calendly webhook have been activated. Run it after the checks above and verify one authorised test booking before calling this feature live. It does not activate Google authentication by itself.
+
+The email uses the verified invitee's actual date, start/end time, time zone, meeting URL, Calendly booking page, and supplied reschedule/cancel URLs. It never treats a browser event as proof of a booking. Only a matching, consenting inquiry with an active appointment can receive it. Canceled, missed, and expired appointments do not receive a new welcome email.
+
+`Booking Emails` is a restricted ledger in the same spreadsheet. Each Calendly invitee receives at most one automatic send attempt after quota is available. A successful send is recorded as accepted; an uncertain send becomes `needs_review` and must be checked in Sent mail before retrying. Quota-limited sends remain pending for the existing webhook retry trigger. A new confirmed reschedule has a new invitee record and can receive its updated details.
+
+The website's required contact checkbox starts unchecked. Consent notice version and server-recorded submission time are saved with the inquiry. A separate unchecked permission is required before loading the Calendly widget or showing the external scheduling link. No marketing subscription is added.

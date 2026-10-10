@@ -4,13 +4,17 @@ import vm from 'node:vm';
 import {createHash} from 'node:crypto';
 import {HEADERS,BOOKING_HEADERS} from '../automation/sheet-model.mjs';
 const code=fs.readFileSync(new URL('../automation/Code.gs',import.meta.url),'utf8');
-const grid=[[...HEADERS,'Confirmation email','Email accepted (UTC)','Email issue','Contact consent',...BOOKING_HEADERS]];
+const globalGrid=[[...HEADERS,'Confirmation email','Email accepted (UTC)','Email issue','Contact consent',...BOOKING_HEADERS]];
+const bookingGrid=[];
+const grid=globalGrid;
 let locked=false,quota=100,sendMode='success';const sent=[];
 const props={WEBHOOK_SECRET:'test-secret-only-never-production-123456',EMAIL_ENABLED:'true',CALENDLY_API_TOKEN:'fixture-token',CALENDLY_WEBHOOK_SECRET:'fixture-webhook-secret',CALENDLY_SYNC_ENABLED:'true'};
 const apiFixtures=new Map();let providerUnavailable=false;
-function range(r,c,n=1,m=1){return {getValues:()=>Array.from({length:n},(_,i)=>Array.from({length:m},(_,j)=>grid[r+i-1]?.[c+j-1]??'')),getValue:()=>grid[r-1]?.[c-1]??'',setValues(v){v.forEach((row,i)=>row.forEach((x,j)=>{grid[r+i-1]??=[];grid[r+i-1][c+j-1]=x;}));return this;},setValue(v){return this.setValues([[v]]);},setFormula(){return this;},setNumberFormat(){return this;}};}
+function range(r,c,n=1,m=1,grid=globalGrid){return {getValues:()=>Array.from({length:n},(_,i)=>Array.from({length:m},(_,j)=>grid[r+i-1]?.[c+j-1]??'')),getValue:()=>grid[r-1]?.[c-1]??'',setValues(v){v.forEach((row,i)=>row.forEach((x,j)=>{grid[r+i-1]??=[];grid[r+i-1][c+j-1]=x;}));return this;},setValue(v){return this.setValues([[v]]);},setFormula(){return this;},setNumberFormat(){return this;}};}
 const sheet={getRange:range,getLastRow:()=>grid.length,getMaxRows:()=>1000};
-const ctx=vm.createContext({PropertiesService:{getScriptProperties:()=>({getProperty:k=>props[k],getProperties:()=>({...props}),setProperty(k,v){props[k]=v;},deleteProperty(k){delete props[k];}})},SpreadsheetApp:{openById:()=>({getSheetByName:()=>sheet}),flush(){}},LockService:{getScriptLock:()=>({waitLock(){assert.equal(locked,false);locked=true;},hasLock:()=>locked,releaseLock(){locked=false;}})},MailApp:{getRemainingDailyQuota:()=>quota,sendEmail(m){sent.push(m);if(sendMode==='uncertain')throw Error('network');}},ContentService:{createTextOutput:text=>({setMimeType:()=>({text})}),MimeType:{JSON:'application/json'}},Utilities:{DigestAlgorithm:{SHA_256:'sha256'},computeDigest:(kind,text)=>[...createHash('sha256').update(text).digest()],base64EncodeWebSafe:a=>Buffer.from(a).toString('base64url')},UrlFetchApp:{fetch(url,options){assert.equal(options.headers.Authorization,'Bearer fixture-token');assert.equal(options.followRedirects,false);if(providerUnavailable)throw Error('Unavailable');const resource=apiFixtures.get(url);return {getResponseCode:()=>resource?200:404,getContentText:()=>JSON.stringify({resource})};}},Date,console});
+const emailSheet={getRange:(r,c,n,m)=>range(r,c,n,m,bookingGrid),getLastRow:()=>bookingGrid.length,getMaxRows:()=>1000,setFrozenRows(){}};
+const book={getSheetByName:name=>name==='Booking Emails'?(bookingGrid.length?emailSheet:null):sheet,insertSheet:()=>emailSheet};
+const ctx=vm.createContext({PropertiesService:{getScriptProperties:()=>({getProperty:k=>props[k],getProperties:()=>({...props}),setProperty(k,v){props[k]=v;},deleteProperty(k){delete props[k];}})},SpreadsheetApp:{openById:()=>book,flush(){}},LockService:{getScriptLock:()=>({waitLock(){assert.equal(locked,false);locked=true;},hasLock:()=>locked,releaseLock(){locked=false;}})},MailApp:{getRemainingDailyQuota:()=>quota,sendEmail(m){sent.push(m);if(sendMode==='uncertain')throw Error('network');}},ContentService:{createTextOutput:text=>({setMimeType:()=>({text})}),MimeType:{JSON:'application/json'}},Utilities:{formatDate:(date,zone,format)=>new Intl.DateTimeFormat('en-US',{timeZone:zone,...(format.includes('yyyy')?{year:'numeric',month:'long',day:'numeric'}:{hour:'numeric',minute:'2-digit'})}).format(date),DigestAlgorithm:{SHA_256:'sha256'},computeDigest:(kind,text)=>[...createHash('sha256').update(text).digest()],base64EncodeWebSafe:a=>Buffer.from(a).toString('base64url')},UrlFetchApp:{fetch(url,options){assert.equal(options.headers.Authorization,'Bearer fixture-token');assert.equal(options.followRedirects,false);if(providerUnavailable)throw Error('Unavailable');const resource=apiFixtures.get(url);return {getResponseCode:()=>resource?200:404,getContentText:()=>JSON.stringify({resource})};}},Date,console});
 vm.runInContext(code,ctx);
 const base={requestId:crypto.randomUUID(),name:'Test Owner',company:'=HYPERLINK("evil")',email:'test@example.com',services:['Email & chat support'],agents:'4–5',start:'Within 2–4 weeks',duration:'Ongoing support',budgetStatus:'Approved budget',role:'Owner / decision-maker',intent:'chat',mode:'Email',timezone:'Asia/Manila',message:'Testing a written conversation.',consent:true,variant:'royal'};
 function post(lead=base,overrides={}){return JSON.parse(ctx.doPost({postData:{contents:JSON.stringify({secret:props.WEBHOOK_SECRET,lead,sendConfirmation:true,...overrides})}}).text);}
@@ -46,5 +50,29 @@ apiFixtures.set(nextInvitee,{...invitee,uri:nextInvitee,event:nextEvent,status:'
 invitee.status='canceled';invitee.rescheduled=true;invitee.new_invitee=nextInvitee;
 assert.equal(webhook().ok,true);assert.equal(bookingRow[34],'Confirmed');assert.equal(bookingRow[36],nextInvitee);assert.equal(bookingRow[37],'2026-10-13T13:00:00Z');
 delete invitee.new_invitee;invitee.rescheduled=false;assert.equal(webhook().ok,true);assert.equal(bookingRow[36],nextInvitee);assert.equal(bookingRow[34],'Confirmed');
+// Turn on the new thank-you only for this isolated verification fixture.
+props.BOOKING_EMAIL_ENABLED='true';
+invitee.rescheduled=true;invitee.new_invitee=nextInvitee;
+const beforeWelcome=sent.length;
+bookingRow[33]='No';assert.equal(webhook().ok,true);assert.equal(sent.length,beforeWelcome);bookingRow[33]='Yes';
+assert.equal(webhook().ok,true);assert.equal(sent.length,beforeWelcome+1);
+const welcome=sent.at(-1);assert.equal(welcome.to,bookingLead.email);assert.match(welcome.subject,/Thank you for booking/);assert.match(welcome.body,/Asia\/Manila/);assert.match(welcome.body,/https:\/\/meet.google.com\/fixture/);assert.ok(welcome.body.includes(ctx.CALENDLY_URL));
+assert.equal(bookingGrid[1][3],'accepted');
+assert.equal(webhook().ok,true);assert.equal(sent.length,beforeWelcome+1);
+const activeNext=apiFixtures.get(nextInvitee);
+activeNext.uri=nextEvent+'/invitees/eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';activeNext.created_at='2026-10-10T15:00:00Z';
+apiFixtures.set(activeNext.uri,activeNext);invitee.rescheduled=true;invitee.new_invitee=activeNext.uri;
+quota=0;assert.equal(webhook().ok,true);assert.equal(sent.length,beforeWelcome+1);assert.equal(bookingGrid[2][3],'pending');
+quota=100;ctx.retryCalendlyBookings();assert.equal(sent.length,beforeWelcome+2);assert.equal(bookingGrid[2][3],'accepted');
+// An uncertain send must never be automatically replayed.
+activeNext.uri=nextEvent+'/invitees/ffffffff-ffff-ffff-ffff-ffffffffffff';activeNext.created_at='2026-10-10T16:00:00Z';apiFixtures.set(activeNext.uri,activeNext);invitee.new_invitee=activeNext.uri;
+sendMode='uncertain';assert.equal(webhook().ok,true);assert.equal(bookingGrid[3][3],'needs_review');const afterUncertain=sent.length;
+sendMode='success';assert.equal(webhook().ok,true);assert.equal(sent.length,afterUncertain);
+// A rejected consent or canceled booking cannot receive a thank-you.
+bookingRow[33]='No';assert.equal(webhook().ok,true);assert.equal(sent.length,afterUncertain);bookingRow[33]='Yes';
+activeNext.status='canceled';assert.equal(webhook().ok,true);assert.equal(sent.length,afterUncertain);
+const safe=ctx.bookingConfirmationMessage({name:'<script>bad</script>',reference:'RC-TEST',eventName:'Discovery',date:'12 October',start:'9 am',end:'9:30 am',timezone:'UTC',meetingUrl:'javascript:bad()',calendlyUrl:'https://evil.example/calendar',rescheduleUrl:'https://calendly.com/reschedulings/test',cancelUrl:'https://calendly.com/cancellations/test'});
+assert.ok(safe.html.includes('&lt;script&gt;'));assert.ok(!safe.html.includes('javascript:'));assert.ok(!safe.html.includes('evil.example'));assert.ok(safe.html.includes('https://calendly.com/reschedulings/test'));
 assert.equal(locked,false);
-console.log('PASS: Google receipts, protected writes, quota/uncertain-send handling; Calendly verification, provider failure recovery, matched references, recipient/host scope, duplicate prevention, cancellation and reschedule ordering. In-memory tests only; no external messages or appointments.');
+
+console.log('PASS: verified booking thank-yous with details and safe links, consent, ledger deduplication, quota retries and uncertain sends; Google receipts, protected writes, quota/uncertain-send handling; Calendly verification, provider failure recovery, matched references, recipient/host scope, duplicate prevention, cancellation and reschedule ordering. In-memory tests only; no external messages or appointments.');

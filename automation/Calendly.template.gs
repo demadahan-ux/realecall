@@ -104,6 +104,11 @@ function saveVerifiedBooking_(uri){
   if(!Number.isFinite(Date.parse(event.start_time))||!Number.isFinite(Date.parse(event.end_time))||!Number.isFinite(Date.parse(invitee.created_at)))throw new Error('Invalid event timing');
   var values=[status,event.uri,invitee.uri,event.start_time,event.end_time,invitee.timezone||'',link,invitee.updated_at||event.updated_at||'',canceled?'Calendly cancellation / reschedule notice':'Calendly appointment confirmation',invitee.created_at,''];
   sheet.getRange(index+2,35,1,11).setValues([values.map(safeCell_)]);SpreadsheetApp.flush();
+  if(!canceled&&!invitee.no_show&&new Date(event.end_time).getTime()>Date.now()){
+   var mailStatus=sendBookingWelcome_(previous,invitee,event);
+   sheet.getRange(index+2,43).setValue(mailStatus==='not_configured'?'Calendly appointment confirmation':'Calendly + RealeCall thank-you: '+mailStatus);
+   if(mailStatus==='pending')return 'pending';
+  }
   return 'saved';
  }finally{lock.releaseLock();}
 }
